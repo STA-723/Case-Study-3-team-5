@@ -1,0 +1,32 @@
+---
+title: "Data Exploration"
+author: "Irene Ji"
+date: "2/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data_format_93 <- read.csv("Harvard_CAS_1993/DS0001/Data_Format_93.csv", header = TRUE)
+dat93 = read.fwf("Harvard_CAS_1993/DS0001/06577-0001-Data.txt", widths=data_format_93$Col_Width, na.strings=c("NA", " ", "."), col.names = paste0(data_format_93$Name) )
+```
+
+```{r}
+data_format_97 <- read.csv("Harvard_CAS_1997/DS0001/Data_Format_97.csv", header = TRUE)
+dat97 = read.fwf("Harvard_CAS_1997/DS0001/03163-0001-Data.txt", widths=data_format_97$Col_Width, na.strings=c("NA", " ", "."), col.names = paste0(data_format_97$Name) )
+```
+
+```{r}
+data_format_99 <- read.csv("Harvard_CAS_1999/DS0001/Data_Format_99.csv", header = TRUE)
+dat99 = read.fwf("Harvard_CAS_1999/DS0001/03818-0001-Data.txt", widths=data_format_99$Col_Width, na.strings=c("NA", " ", "."), col.names = paste0(data_format_99$Name) )
+```
+
+```{r}
+data_format_01 <- read.csv("Harvard_CAS_2001/DS0001/Data_Format_01.csv", header = TRUE)
+dat01 = read.fwf("Harvard_CAS_2001/DS0001/04291-0001-Data.txt", widths=data_format_01$Col_Width, na.strings=c("NA", " ", "."), col.names = paste0(data_format_01$Name) )
+```
+
+

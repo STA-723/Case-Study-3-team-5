@@ -1,0 +1,38 @@
+---
+title: "Data Exploration"
+author: "Irene Ji"
+date: "2/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(tidyr)
+library(ggplot2)
+```
+
+```{r}
+load("dat.RData")
+names(dat93)
+names(dat97)
+names(dat99)
+names(dat01)
+```
+
+```{r}
+dat93_Recode <- dat93[,284:405]
+apply(dat93_Recode, 2, function(x) unique(x))
+
+dat93_Recode[,1:10] %>%
+  keep(is.numeric) %>% 
+  gather() %>% 
+  ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram()
+```
+
+Most columns have binary responses, and they are reflecting some aspects of drinking/ smoking/ drug use behaviours. How to select response variable is a problem...
+
+
+

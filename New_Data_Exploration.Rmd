@@ -10,14 +10,13 @@ knitr::opts_chunk$set(echo = TRUE)
 library(purrr)
 library(tidyr)
 library(ggplot2)
+library(cowplot)
+library(corrplot)
+library(tidyverse)
 ```
 
 ```{r}
 load("dat.RData")
-names(dat93)
-names(dat97)
-names(dat99)
-names(dat01)
 ```
 
 ```{r}
@@ -34,5 +33,49 @@ dat93_Recode[,1:10] %>%
 
 Most columns have binary responses, and they are reflecting some aspects of drinking/ smoking/ drug use behaviours. How to select response variable is a problem...
 
+
+### Use drinkcat for binge drink (CAS Study)
+the term binge is referring to the consumption of five drinks in a row for males or four drinks in a row for females on a single occasion within a 2-week time period
+```{r}
+p1 <- ggplot(dat93,aes(x = DRINKCAT)) + geom_histogram() + ggtitle("93")
+p2 <- ggplot(dat97,aes(x = DRINKCAT)) + geom_histogram() + ggtitle("97")
+p3 <- ggplot(dat99,aes(x = DRINKCAT)) + geom_histogram() + ggtitle("99")
+p4 <- ggplot(dat01,aes(x = DRINKCAT)) + geom_histogram() + ggtitle("01")
+
+plot_grid(p1,p2,p3,p4)
+```
+Binge drink levels do not seem to differ much across years.  
+
+
+### Drug use in 30 days / 1 year (E1)
+```{r}
+dat93[1,]
+Druguse_93 <- dat93[,names(dat93) %in% c("DAYE1A","DAYE1B","DAYE1C","DAYE1D","DAYE1E","DAYE1F",
+                                 "DAYE1G","DAYE1H","DAYE1I","DAYE1J","DAYE1K","DAYE1L",
+                                 "DAYE1M","YEARE1A","YEARE1B","YEARE1C","YEARE1D","YEARE1E","YEARE1F",
+                                 "YEARE1G","YEARE1H","YEARE1I","YEARE1J","YEARE1K","YEARE1L",
+                                 "YEARE1M")]
+# sum them up
+Druguse_93 <- Druguse_93 %>% mutate(total_day = DAYE1A + DAYE1B + DAYE1C + DAYE1D +
+                                          DAYE1E + DAYE1F + DAYE1G + DAYE1H + DAYE1I +
+                                          DAYE1J + DAYE1K + DAYE1L + DAYE1M,
+                                    total_year = YEARE1A + YEARE1B + YEARE1C + YEARE1D +
+                                          YEARE1E + YEARE1F + YEARE1G + YEARE1H + YEARE1I + 
+                                          YEARE1J + YEARE1K + YEARE1L + YEARE1M)
+Druguse_93 <- Druguse_93[complete.cases(Druguse_93),]
+corrplot(cor(Druguse_93))
+
+p1 <- ggplot(Druguse_93,aes(x = total_day)) + geom_histogram()
+p2 <- ggplot(Druguse_93,aes(x = total_year)) + geom_histogram()
+plot_grid(p1,p2)
+```
+### Variance study
+```{r}
+policy_opinion_93 <- dat93[,grepl("B\\d+", names(dat93))]
+# names(policy_opinion_93)
+policy_opinion_93 <- policy_opinion_93[,-ncol(policy_opinion_93)]
+var <- apply(policy_opinion_93,1,function(x) var(x, na.rm = TRUE))
+hist(var)
+```
 
 

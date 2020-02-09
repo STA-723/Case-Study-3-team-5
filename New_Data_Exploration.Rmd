@@ -21,7 +21,7 @@ load("dat.RData")
 
 ```{r}
 dat93_Recode <- dat93[,284:405]
-apply(dat93_Recode, 2, function(x) unique(x))
+# apply(dat93_Recode, 2, function(x) unique(x))
 
 dat93_Recode[,1:10] %>%
   keep(is.numeric) %>% 
@@ -48,8 +48,9 @@ Binge drink levels do not seem to differ much across years.
 
 
 ### Drug use in 30 days / 1 year (E1)
+Question: how are response recorded?
 ```{r}
-dat93[1,]
+# dat93[1,]
 Druguse_93 <- dat93[,names(dat93) %in% c("DAYE1A","DAYE1B","DAYE1C","DAYE1D","DAYE1E","DAYE1F",
                                  "DAYE1G","DAYE1H","DAYE1I","DAYE1J","DAYE1K","DAYE1L",
                                  "DAYE1M","YEARE1A","YEARE1B","YEARE1C","YEARE1D","YEARE1E","YEARE1F",
@@ -68,8 +69,23 @@ corrplot(cor(Druguse_93))
 p1 <- ggplot(Druguse_93,aes(x = total_day)) + geom_histogram()
 p2 <- ggplot(Druguse_93,aes(x = total_year)) + geom_histogram()
 plot_grid(p1,p2)
+
+p3 <- ggplot(dat93,aes(x = ANYDRUG1)) + geom_histogram()
+p4 <- ggplot(dat93,aes(x = ANYDRUG2)) + geom_histogram()
+plot_grid(p3,p4)
 ```
+
+### Smoke
+```{r}
+p1 <- ggplot(dat93,aes(x = CIGUSE)) + geom_histogram()
+p2 <- ggplot(dat93,aes(x = CIGYEAR)) + geom_histogram()
+p3 <- ggplot(dat93,aes(x = EVERSMOK)) + geom_histogram()
+plot_grid(p1,p2,p3)
+```
+
+
 ### Variance study
+
 ```{r}
 policy_opinion_93 <- dat93[,grepl("B\\d+", names(dat93))]
 # names(policy_opinion_93)

@@ -64,14 +64,12 @@ names(final_pred_data) <- c("A12_var", "B15_var", "C20_var", "C22_var", "B9_var"
 
 corrgram(final_pred_data)
 
-hist(final_pred_data$B9_var)
-
 ```
 
 
 Analysis Part 2 on Comments
 ```{r}
-model_data <-cbind(comments, pred_data)
+model_data <-cbind(comments, final_pred_data)
 model <- glm(data= model_data, comments~. , family = "binomial")
 plot(model)
 summary(model)

@@ -153,8 +153,83 @@ Sparse PCA
 ```{r}
 #install.packages("sparsepca")
 require(sparsepca)
-pca <- robspca(final_pred_data)
-summary(pca)
+#pca <- robspca(final_pred_data)
+#summary(pca)
+```
+
+Extract School Policy Variables and Drink/Tobacco Usage
+
+```{r}
+#Tobacco and Drinking Policy
+data <- data %>% mutate(school_alc_pol = as.factor(B2)) %>% mutate(stren_alc_pol = as.numeric(B3 == 1 | B3 == 3)) %>% mutate(school_tob_pol = as.factor(B16))
+  
+#Drinking
+data <- data %>% mutate(drinks_occasions = ifelse(is.na(C9), 0, C9)) %>% mutate(drinks_num = ifelse(is.na(C10), 0, C10))
+
+#Tobacco Usage
+data <- data %>% mutate(smoking_num = ifelse(is.na(E3), 0, E3)) %>% mutate(smoking_occasions = ifelse(is.na(E5), 0, E5))
+
+final_model_data <- cbind(final_model_data,data[,461:467])
+```
+
+Regress Engagement on School Policy and Personal Behavior
+```{r}
+#Add Means
+data <- data %>% mutate(B15_mean = rowMeans(data %>% select(starts_with("B15"))))
+final_model_data <- final_model_data %>% mutate(B15_mean = rowMeans(data %>% select(starts_with("B15"))))
+data <- data %>% mutate(A12_mean = rowMeans(data %>% select(starts_with("A12"))))
+final_model_data <- final_model_data %>% mutate(A12_mean = rowMeans(data %>% select(starts_with("A12"))))
+data <- data %>% mutate(C20_mean = rowMeans(data %>% select(starts_with("C20"))))
+final_model_data <- final_model_data %>% mutate(C20_mean = rowMeans(data %>% select(starts_with("C20"))))
+data <- data %>% mutate(C22_mean = rowMeans(data %>% select(starts_with("C22"))))
+final_model_data <- final_model_data %>% mutate(C22_mean = rowMeans(data %>% select(starts_with("C22"))))
+
+summary(lm(data = final_model_data, A12_var ~ school_alc_pol + stren_alc_pol + school_tob_pol + drinks_occasions + drinks_num + smoking_num + smoking_occasions))
+
+summary(lm(data = final_model_data, B15_var ~ school_alc_pol + stren_alc_pol + school_tob_pol + drinks_occasions + drinks_num + smoking_num + smoking_occasions))
+
+summary(lm(data = final_model_data, C20_var ~ school_alc_pol + stren_alc_pol + school_tob_pol + drinks_occasions + drinks_num + smoking_num + smoking_occasions))
+
+summary(lm(data = final_model_data, C22_var ~ school_alc_pol + stren_alc_pol + school_tob_pol + drinks_occasions + drinks_num + smoking_num + smoking_occasions))
+```
+
+Regress Social Change on Engagement and Person Behavior (with B15_var and B15_mean)
+```{r}
+
+summary(glm(data = final_model_data, change_alc_pol ~ A12_var + A12_mean +B15_mean +  B15_var + C20_var + C20_mean + C22_var + C22_mean + school_alc_pol + stren_alc_pol + school_tob_pol  + drinks_occasions + drinks_num + smoking_num + smoking_occasions, family = "binomial"))
+
+summary(glm(data = final_model_data, change_tob_pol ~ A12_var + A12_mean +B15_mean +  B15_var + C20_var + C20_mean + C22_var + C22_mean + school_alc_pol + stren_alc_pol + school_tob_pol  + drinks_occasions + drinks_num + smoking_num + smoking_occasions, family = "binomial"))
+
+summary(glm(data = final_model_data, agree_alc_pol ~ A12_var + A12_mean +B15_mean +  B15_var + C20_var + C20_mean + C22_var + C22_mean + school_alc_pol + stren_alc_pol + school_tob_pol  + drinks_occasions + drinks_num + smoking_num + smoking_occasions, family = "binomial"))
+
+summary(glm(data = final_model_data, min_drink_age ~ A12_var + A12_mean +B15_mean +  B15_var + C20_var + C20_mean + C22_var + C22_mean + school_alc_pol + stren_alc_pol + school_tob_pol  + drinks_occasions + drinks_num + smoking_num + smoking_occasions, family = "binomial"))
+```
+
+
+Regress Social Change on Engagement and Person Behavior (without B15_var and B15_mean)
+```{r}
+
+summary(glm(data = final_model_data, change_alc_pol ~ A12_var + C20_var + C22_var + school_alc_pol + stren_alc_pol + school_tob_pol  + drinks_occasions + drinks_num + smoking_num + smoking_occasions, family = "binomial"))
+
+summary(glm(data = final_model_data, change_tob_pol ~ A12_var + C20_var + C22_var + school_alc_pol + stren_alc_pol + school_tob_pol  + drinks_occasions + drinks_num + smoking_num + smoking_occasions, family = "binomial"))
+
+summary(glm(data = final_model_data, agree_alc_pol ~ A12_var + C20_var + C22_var + school_alc_pol + stren_alc_pol + school_tob_pol  + drinks_occasions + drinks_num + smoking_num + smoking_occasions, family = "binomial"))
+
+summary(glm(data = final_model_data, min_drink_age ~ A12_var + C20_var + C22_var + school_alc_pol + stren_alc_pol + school_tob_pol  + drinks_occasions + drinks_num + smoking_num + smoking_occasions, family = "binomial"))
+```
+
+Social Engagement Variables and Perception Variable (not sure what to do with this variable, but could be cool)
+
+```{r}
+data <- data %>% mutate(advice = D4) %>% mutate(complaint = D5) %>% mutate(perception = D3B/D3A)
+final_model_data <- final_model_data %>% mutate(advice = data$D4) %>% mutate(complaint = data$D5) %>% mutate(perception = data$D3B/data$D3A)
+hist(final_model_data$perception)
+summary(lm(perception ~ . , data = final_model_data))
+#plot(lm(perception ~ . , data = final_model_data))
+```
+
+```{r}
+corrgram(final_model_data)
 ```
 
 

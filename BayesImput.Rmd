@@ -1,0 +1,19 @@
+---
+title: "BayesImput"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+
+#install.packages("NPBayesImputeCat")
+library(NPBayesImputeCat)
+model <- CreateModel(dat[,5:ncol(dat)], MCZ = NULL, 10,10000,0.25,0.25,17)
+model$Run(20,40,2)
+result <- model$snapshot
+dat_imputed = GetDataFrame(result$ImputedX, dat[, 5:ncol(dat)])
+
+```
+
+

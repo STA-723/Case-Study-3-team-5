@@ -1,20 +1,64 @@
 ---
-title: "1993 Data Analysis"
+title: "1993 Data Analysis - lavaan"
 author: "Irene Ji"
-date: "2/7/2020"
+date: "2/12/2020"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-load("dat.Rdata")
 library(lavaan)
 ```
 
-### 
+```{r Self-defined functions}
+'%!in%' <- function(x,y)!('%in%'(x,y))
+```
 
 ```{r}
+load("dat.Rdata")
+data <- dat93
+#Questions
+data_B17 <- dat93 %>% select(starts_with("B17"))
+```
 
+Social Change Variables
+```{r}
+data<- data %>% mutate(change_alc_pol = as.numeric(B6 == 2 | B6 == 3) ) # approach to student drinking
+data<- data %>% mutate(min_drink_age = as.numeric(B18 != 6 )) # min age below 22
+```
+
+Further data processing
+```{r}
+col_num <- c("NUMPROB","STWGT_93","VOL30")
+data[,names(data) %!in% col_num] <- lapply(data[,names(data) %!in% col_num], as.factor)
+
+var_excl <- c(1:282, 312:337, 343:354, 356:357, 359:366,
+              369:377, 392:394, 399:404)
+
+dat93_lavmodel <- cbind(data[,-var_excl], data_B17)
+
+# remove singularities (from glm, may be able to use them after data imputation)
+varname_excl <- c("BINGE","PROBGULP","DRIVE","FREQBING","OTHRHOUS","NOBINGE","UPTAKE","CONTBING","DD_1","DD_5")
+dat93_lavmodel <- dat93_lavmodel[,names(dat93_lavmodel) %!in% varname_excl]
+```
+
+### lavaan model
+```{r}
+HS.model <- '
+      # latent variables
+        personal =~ B17_A + B17_E + B17_G + B17_H + B17_I + B17_J + B17_K
+        communal =~ B17_B + B17_C + B17_D + B17_F
+      # regressions
+        DRINKCAT ~ exp(personal) * (SEX + AGEGROUP + GRADE) + exp(communal) * (SECALC_A + SECALC_B +
+        SECALC_C + SECALC_D + SECALC_E + SECALC_G + SECALC_H + SECALC_I + OFF_CAMP)
+      '
+fit <- cfa(HS.model, data = dat93_lavmodel, ordered=c("DRINKCAT",
+                                                      "B17_A","B17_E","B17_G","B17_H","B17_I",
+                                                      "B17_J","B17_K","B17_B","B17_C","B17_D",
+                                                      "B17_F","SEX","AGEGROUP","GRADE","SECALC_A",
+                                                      "SECALC_B","SECALC_C","SECALC_D","SECALC_E",
+                                                      "SECALC_G","SECALC_H","SECALC_I","OFF_CAMP"))
+summary(fit)
 ```
 
 

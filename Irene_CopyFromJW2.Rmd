@@ -1,0 +1,133 @@
+---
+title: "JW-Workspace2"
+author: "Justin Weltz"
+date: "2/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(dplyr)
+require(corrgram)
+```
+
+```{r}
+load("dat.Rdata")
+#Questions
+data_B15 <- dat99 %>% select(starts_with("B15"))
+#Comments
+data <- dat99 %>% mutate(new_comment = as.numeric(COMMENTS == 1))
+```
+
+Social Change Variables
+```{r}
+data<- data %>% mutate(change_alc_pol = as.numeric(B5 == 2 | B5 == 3) )
+data<- data %>% mutate(min_drink_age = as.numeric(B13 != 5 ))
+data<- data %>% mutate(agree_alc_pol = as.numeric(B4 == 3 | B4 == 4) )
+data<- data %>% mutate(change_tob_pol = as.numeric(B16 != 4 & B17 != 4 & B17 != B16) )
+```
+
+
+Extract School Policy Variables and Drink/Tobacco Usage
+
+```{r}
+#Tobacco and Drinking Policy
+data <- data %>% mutate(school_alc_pol = as.factor(B2)) %>% mutate(stren_alc_pol = as.numeric(B3 == 1 | B3 == 3)) %>% mutate(school_tob_pol = as.factor(B16))
+  
+#Drinking
+data <- data %>% mutate(drinks_occasions = ifelse(is.na(C9), 0, C9)) %>% mutate(drinks_num = ifelse(is.na(C10), 0, C10))
+
+#Tobacco Usage
+data <- data %>% mutate(smoking_num = ifelse(is.na(E3), 0, E3)) %>% mutate(smoking_occasions = ifelse(is.na(E5), 0, E5))
+
+```
+
+Social Engagement Variables and Perception Variable (not sure what to do with this variable, but could be cool)
+```{r}
+data <- data %>% mutate(advice = D4) %>% mutate(complaint = D5) %>% mutate(perception = D3B/D3A)
+
+View(data)
+final_data <- cbind(data_B15, data[,456:470])
+#View(final_data)
+```
+
+Let's run the Measurement Model First:
+```{r}
+#install.packages("lavaan")
+require(lavaan)
+HS.model <- ' personal  =~ B15A + B15D + B15G + B15H + B15I + B15J 
+              communal =~ B15B + B15C + B15E + B15F '
+
+fit <- cfa(HS.model, data=final_data, ordered = c("B15A", "B15B","B15C","B15D","B15E","B15F", "B15G", "B15H", "B15I", "B15J"))
+
+summary(fit)
+```
+
+```{r}
+#final_data$str
+#install.packages("lavaan")
+#View(final_data)
+require(lavaan)
+HS.model <- ' #Measurement Model 
+              personal  =~ B15A + B15D + B15G + B15H + B15I + B15J 
+              communal =~ B15B + B15C + B15E + B15F
+              #Regressions
+              personal ~ drinks_num + advice + complaint + perception + stren_alc_pol + drinks_occasions
+              communal ~ drinks_num + advice + complaint + perception + stren_alc_pol + drinks_occasions'
+
+#final_data[complete.cases(final_data),]
+
+fit <- sem(HS.model, data=final_data, ordered = c("B15A", "B15B","B15C","B15D","B15E","B15F", "B15G", "B15H", "B15I", "B15J"))
+?lavPredict
+summary(fit)
+```
+
+Obtain the residuals of B15's from SEM (saved as "residuals_B15"):
+```{r}
+# Fitted values of survey responses
+ov_pred <- lavPredict(fit, type = "ov")
+ov_pred <- data.frame(ov_pred)
+
+# Obtain original survey responses (use na.omit to make sure the same number of observations are included in both fitted and observed)
+name_col <- c("B15A","B15D","B15G","B15H","B15I","B15J",
+              "B15B","B15C","B15E","B15F",
+              "drinks_num","advice","complaint","perception","stren_alc_pol",
+              "drinks_occasions")
+obs_data <- na.omit(final_data[,names(final_data) %in% name_col])
+
+# Check number of observations
+nrow(obs_data) - nrow(ov_pred)
+
+# Reorder the columns to compute residuals
+ov_pred_B15 <- cbind(ov_pred$B15A, ov_pred$B15B, ov_pred$B15C,
+                     ov_pred$B15D, ov_pred$B15E, ov_pred$B15F,
+                     ov_pred$B15G, ov_pred$B15H, ov_pred$B15I,
+                     ov_pred$B15J)
+obs_B15 <- cbind(obs_data$B15A, obs_data$B15B, obs_data$B15C,
+                 obs_data$B15D, obs_data$B15E, obs_data$B15F,
+                 obs_data$B15G, obs_data$B15H, obs_data$B15I,
+                 obs_data$B15J)
+
+# Compute residuals and rename the columns
+residuals_B15 <- data.frame(ov_pred_B15 - obs_B15)
+names(residuals_B15) <- c("B15A","B15B","B15C","B15D","B15E","B15F","B15G",
+                          "B15H","B15I","B15J")
+```
+
+(This code chunk is just to confirm the "ov" type gives exactly fitted value on survey responses):
+```{r}
+latent_pred <- lavPredict(fit)
+summary(fit)
+coef(fit)[1:8] # extract factor loadings
+
+# Check the first sample
+# A, D, G, H, I, J for personal
+c(1,coef(fit)[1:5])*latent_pred[1,1] - ov_pred[1,1:6]
+
+# B, C, E, F for communal
+c(1,coef(fit)[6:8])*latent_pred[1,2] - ov_pred[1,7:10]
+
+# Check all
+sum(latent_pred[,1] %*% matrix(c(1,coef(fit)[1:5]),nrow=1) - ov_pred[,1:6])
+sum(latent_pred[,2] %*% matrix(c(1,coef(fit)[6:8]),nrow=1) - ov_pred[,7:10])
+```

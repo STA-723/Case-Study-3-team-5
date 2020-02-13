@@ -109,7 +109,7 @@ obs_B15 <- cbind(obs_data$B15A, obs_data$B15B, obs_data$B15C,
                  obs_data$B15J)
 
 # Compute residuals and rename the columns
-residuals_B15 <- data.frame(ov_pred_B15 - obs_B15)
+residuals_B15 <- data.frame(obs_B15 - ov_pred_B15)
 names(residuals_B15) <- c("B15A","B15B","B15C","B15D","B15E","B15F","B15G",
                           "B15H","B15I","B15J")
 ```

@@ -1,0 +1,22 @@
+---
+title: "1993 Data Analysis"
+author: "Irene Ji"
+date: "2/7/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+load("dat.Rdata")
+library(lavaan)
+```
+
+### 
+
+```{r}
+
+```
+
+
+
+

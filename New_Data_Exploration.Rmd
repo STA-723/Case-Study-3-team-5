@@ -14,10 +14,6 @@ library(ggplot2)
 
 ```{r}
 load("dat.RData")
-names(dat93)
-names(dat97)
-names(dat99)
-names(dat01)
 ```
 
 ```{r}

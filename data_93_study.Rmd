@@ -1,0 +1,223 @@
+---
+title: "1993 Data Analysis"
+author: "Irene Ji"
+date: "2/7/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(dplyr)
+require(corrgram)
+load("dat.Rdata")
+```
+
+### Part I. Variance of Responses
+
+Useful Functions
+```{r}
+colvar <- function(x){
+  rowSums((x - rowMeans(x))^2)/(dim(x)[2]-1)
+}
+
+find_colvar <- function(str){
+  x <- dat93 %>% select(starts_with(str))
+  colvar(x)
+}
+
+'%!in%' <- function(x,y)!('%in%'(x,y))
+```
+
+Extract Important Predictor Variables - Importance and Support (Variance)
+```{r}
+predictor_vars <- c("A9", "B1", "B15", "B16","B17", "C16", "C18", "C22", "D2")
+pred_data <- matrix(NA, dim(dat93)[1], length(predictor_vars))
+
+for (i in 1:length(predictor_vars)){
+  pred_data[,i]<- find_colvar(predictor_vars[i])
+}
+pred_data <- data.frame(pred_data)
+names(pred_data) <- c("A9_var", "B1_var", "B15_var", "B16_var","B17_var",
+                      "C16_var", "C18_var", "C22_var", "D2_var")
+#View(pred_data)
+
+#corrgram(pred_data)
+hist(pred_data$A9_var)
+
+final_pred_data <- pred_data
+
+corrgram(final_pred_data)
+```
+
+Comment variable is not found in 1993 dataset.
+
+Social Change Variables
+```{r}
+data <- dat93
+data<- data %>% mutate(change_alc_pol = as.numeric(B6 == 2 | B6 == 3) ) # approach to student drinking
+data<- data %>% mutate(min_drink_age = as.numeric(B18 != 6 )) # min age below 22
+# data<- data %>% mutate(change_tob_pol = as.numeric(B16 != 4 & B17 != 4 & B17 != B16) )
+```
+
+
+Create Final Model Data Set
+```{r}
+final_model_data <- cbind(data[,405:407], pred_data)
+corrgram(final_model_data)
+```
+
+
+Model Gradient Variances as predictors of Social Change Variables
+```{r}
+
+#CHANGE ALC POLICY
+
+# Full model
+model <- glm(data= final_model_data, change_alc_pol~ A9_var+  B1_var + B15_var + B16_var + 
+              B17_var + C16_var + C18_var + D2_var , family = "binomial") 
+#C22 removed -> too many NA's
+summary(model)
+
+# Significant variables from full model
+model <- glm(data= final_model_data, change_alc_pol~ B17_var+  C16_var + D2_var, family = "binomial")
+summary(model)
+
+
+#MINIMUM DRINKING AGE
+
+# Full model
+model <- glm(data= final_model_data, min_drink_age ~ A9_var+  B1_var + B15_var + B16_var + 
+              B17_var + C16_var + C18_var + D2_var , family = "binomial") 
+#C22 removed -> too many NA's
+summary(model)
+
+# Important variables from full model
+model <- glm(data= final_model_data, min_drink_age~ B1_var+  B16_var + B17_var + C16_var, family = "binomial")
+summary(model)
+
+#WAVE (Early/Late Response)
+
+# Full model
+final_model_data <- final_model_data %>% mutate(WAVE1 = ifelse(is.na(WAVE),NA,ifelse(WAVE==1,0,1)))
+model <- glm(data= final_model_data, WAVE1 ~ A9_var+  B1_var + B15_var + B16_var + 
+              B17_var + C16_var + C18_var + D2_var , family = "binomial") 
+#C22 removed -> too many NA's
+summary(model)
+
+# Important variables from full model
+model <- glm(data= final_model_data, WAVE1~ B15_var + C16_var, family = "binomial")
+summary(model)
+```
+
+From the above results, we decide to use B1_var, B15_var, B16_var, B17_var, C16_var and D2_var as measurement of engagement in our predictors.
+
+\newpage
+
+### Part II. Full Model Specification
+
+```{r}
+dat93_model <- dat93
+dat93_model <- cbind(dat93_model, final_model_data[,names(final_model_data) %in% 
+                                         c("change_alc_pol", # exclude B1, B15, too many NA's
+                                           "B16_var", "B17_var","C16_var","D2_var")])
+```
+
+```{r}
+# check missingness
+nrow(dat93_model)
+na_count <- apply(dat93_model,2,function(x) sum(is.na(x)))
+na_count[na_count>10000]
+```
+
+Convert categorical variables into factors
+```{r}
+col_num <- c("NUMPROB","STWGT_93","VOL30","var_response")
+dat93_model[,names(dat93_model) %!in% col_num] <- lapply(dat93_model[,names(dat93_model) %!in% col_num], as.factor)
+```
+
+
+```{r}
+var_excl <- c(1:282, 312:337, 343:354, 356:357, 359:366,
+              369:377, 392:394, 399:404)
+
+# change alcohol policy
+alc_pol_model <- glm(data = dat93_model[,-var_excl], change_alc_pol~., family = "binomial")
+summary(alc_pol_model)
+
+# remove singularities
+var_excl <- c(var_excl, 340, 367, 381, 386:390)
+alc_pol_model <- glm(data = dat93_model[,-var_excl], change_alc_pol~., family = "binomial")
+summary(alc_pol_model) # not optimal
+
+# step
+dat93_model_step <- na.omit(dat93_model[,-var_excl])
+alc_pol_model <- glm(data = dat93_model_step, change_alc_pol~., family = "binomial")
+summary(alc_pol_model)
+# step(alc_pol_model, direction = "both", trace = 0)
+
+# model_test <- glm(data = dat93_model[,-var_excl], change_alc_pol~SEX+DRINKCAT+B17_var, family = "binomial")
+# summary(model_test)
+```
+
+\newpage
+
+### Use variance as response -> exclude question B15 (too many NA's)
+```{r}
+dat93_varmodel <- cbind(dat93, final_model_data$change_alc_pol, final_model_data$min_drink_age)
+var_str <- c("B1","B15","B16","B17","C16","D2")
+Y <- dat93_varmodel %>% select(starts_with(var_str[1]))
+for (i in 2:length(var_str)){
+  Y <- cbind(Y,dat93_varmodel %>% select(starts_with(var_str[i])))
+}
+# summary(Y)
+# remove columns with too many NA's
+Y <- Y[,names(Y) %!in% c("B15_A","B15_B","B15_C","B15_D","B15_E")]
+var_response <- colvar(Y)
+summary(var_response)
+hist(var_response, breaks = 30)
+hist(log(var_response), breaks = 30)
+```
+
+Fit linear model on log(variance):
+```{r}
+col_num <- c("NUMPROB","STWGT_93","VOL30","var_response")
+dat93_varmodel[,names(dat93_varmodel) %!in% col_num] <- lapply(dat93_varmodel[,names(dat93_varmodel) %!in% col_num], as.factor)
+
+var_excl <- c(1:282, 312:337, 343:354, 356:357, 359:366,
+              369:377, 392:394, 399:404)
+
+dat93_varmodel <- cbind(dat93_varmodel[,-var_excl], var_response)
+# include change_alc_pol and min_drink_age as predictors
+var_model <- glm(data = dat93_varmodel, log(var_response)~.,family = "gaussian")
+summary(var_model)
+
+# remove singularities
+varname_excl <- c("BINGE","PROBGULP","DRIVE","FREQBING","OTHRHOUS","NOBINGE","UPTAKE","CONTBING","DD_1","DD_5")
+dat93_varmodel <- dat93_varmodel[,names(dat93_varmodel) %!in% varname_excl]
+var_model <- glm(data = dat93_varmodel, log(var_response)~.,family = "gaussian")
+summary(var_model)
+plot(var_model,ask=F)
+```
+
+The residual plots look ok, but too many observations were removed due to missingness.  
+Some significant variables are: change alcohol policy, minimum drinking age, age group, gender, drinking category.   
+
+Now we try BMA:
+```{r bma, cache=T}
+library(BAS)
+
+var_bma <- bas.lm(log(var_response) ~ ., data = dat93_varmodel,
+                  modelprior = uniform(), n.models = 10000)
+# Model diagnostics
+image(var_bma, rotate = TRUE)
+plot(var_bma, which = 4, ask = FALSE, cex.lab = 0.5)
+summary(var_bma)
+
+# Extract parameters
+coef_bma <- coef(var_bma, n.models = 5)
+ci <- confint(coef_bma,order(confint(coef_bma)[,3],decreasing=TRUE))
+ci
+```
+
+
+

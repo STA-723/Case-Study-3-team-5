@@ -230,7 +230,9 @@ summary(lm(perception ~ . , data = final_model_data))
 
 ```{r}
 corrgram(final_model_data)
+final_model_data
 ```
+
 
 
 Factor Model?

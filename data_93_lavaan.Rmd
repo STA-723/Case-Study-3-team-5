@@ -17,12 +17,23 @@ library(lavaan)
 ```{r}
 load("dat.Rdata")
 data <- dat93
-#Questions
-data_B17 <- dat93 %>% select(starts_with("B17"))
+```
+
+Impute data (currently not included)
+```{r}
+# #install.packages("NPBayesImputeCat")
+# library(NPBayesImputeCat)
+# model <- CreateModel(data[,5:ncol(data)], MCZ = NULL, 10,10000,0.25,0.25,17)
+# model$Run(20,40,2)
+# result <- model$snapshot
+# dat_imputed = GetDataFrame(result$ImputedX, dat[, 5:ncol(dat)])
 ```
 
 Social Change Variables
 ```{r}
+#Questions
+data_B17 <- dat93 %>% select(starts_with("B17"))
+
 data<- data %>% mutate(change_alc_pol = as.numeric(B6 == 2 | B6 == 3) ) # approach to student drinking
 data<- data %>% mutate(min_drink_age = as.numeric(B18 != 6 )) # min age below 22
 ```
@@ -42,25 +53,71 @@ varname_excl <- c("BINGE","PROBGULP","DRIVE","FREQBING","OTHRHOUS","NOBINGE","UP
 dat93_lavmodel <- dat93_lavmodel[,names(dat93_lavmodel) %!in% varname_excl]
 ```
 
-### lavaan model
+### lavaan model 1
 ```{r}
+varname_incl <- c("DRINKCAT","B17_A","B17_E","B17_G","B17_H","B17_I","B17_J",
+                  "B17_K","B17_B","B17_C","B17_D","B17_F","AGEGROUP","SEX","AGEGROUP",
+                  "GRADE","OFFCAMP","SECALC_A","SECALC_B","SECALC_C","SECALC_D",
+                  "SECALC_E","SECALC_G","SECALC_H","SECALC_I")
+dat93_lavmodel <- dat93_lavmodel[,names(dat93_lavmodel) %in% varname_incl]
+dat93_lavmodel <- na.omit(dat93_lavmodel)
+HS.model <- '
+      # latent variables
+        personal =~ B17_A + B17_E + B17_G + B17_H + B17_I + B17_J + B17_K
+        communal =~ B17_B + B17_C + B17_D + B17_F
+      # regressions
+        personal ~ DRINKCAT + SEX + AGEGROUP + GRADE
+        communal ~ DRINKCAT + SEX + AGEGROUP + GRADE +
+                    SECALC_A + SECALC_B + SECALC_C + SECALC_D + 
+                    SECALC_E + SECALC_G + SECALC_H + SECALC_I + OFFCAMP
+      '
+fit <- cfa(HS.model, data = dat93_lavmodel, ordered=c("DRINKCAT",
+                                                      "B17_A","B17_E","B17_G","B17_H","B17_I",
+                                                      "B17_J","B17_K","B17_B","B17_C","B17_D",
+                                                      "B17_F","AGEGROUP"))
+summary(fit, fit.measures = TRUE)
+lavPredict(fit)
+```
+
+### lavaan model 2
+```{r}
+# dat93_lavmodel <- na.omit(dat93_lavmodel)
 HS.model <- '
       # latent variables
         personal =~ B17_A + B17_E + B17_G + B17_H + B17_I + B17_J + B17_K
         communal =~ B17_B + B17_C + B17_D + B17_F
       # regressions
         DRINKCAT ~ exp(personal) * (SEX + AGEGROUP + GRADE) + exp(communal) * (SECALC_A + SECALC_B +
-        SECALC_C + SECALC_D + SECALC_E + SECALC_G + SECALC_H + SECALC_I + OFF_CAMP)
+        SECALC_C + SECALC_D + SECALC_E + SECALC_G + SECALC_H + SECALC_I + OFFCAMP)
       '
 fit <- cfa(HS.model, data = dat93_lavmodel, ordered=c("DRINKCAT",
                                                       "B17_A","B17_E","B17_G","B17_H","B17_I",
                                                       "B17_J","B17_K","B17_B","B17_C","B17_D",
-                                                      "B17_F","SEX","AGEGROUP","GRADE","SECALC_A",
-                                                      "SECALC_B","SECALC_C","SECALC_D","SECALC_E",
-                                                      "SECALC_G","SECALC_H","SECALC_I","OFF_CAMP"))
-summary(fit)
+                                                      "B17_F"))
+summary(fit, fit.measures = TRUE)
+lavPredict(fit)
 ```
 
-
+blavaan
+```{r}
+# library(blavaan)
+# 
+# HS.model <- '
+#       # latent variables
+#         personal =~ B17_A + B17_E + B17_G + B17_H + B17_I + B17_J + B17_K
+#         communal =~ B17_B + B17_C + B17_D + B17_F
+#       # regressions
+#         personal ~ DRINKCAT + SEX + AGEGROUP + GRADE
+#         communal ~ DRINKCAT + SEX + AGEGROUP + GRADE +
+#                     SECALC_A + SECALC_B + SECALC_C + SECALC_D + 
+#                     SECALC_E + SECALC_G + SECALC_H + SECALC_I + OFFCAMP
+#       '
+# 
+# fit <- blavaan(HS.model, data=dat93_lavmodel,ordered=c("DRINKCAT",
+#                                                       "B17_A","B17_E","B17_G","B17_H","B17_I",
+#                                                       "B17_J","B17_K","B17_B","B17_C","B17_D",
+#                                                       "B17_F","AGEGROUP"))
+```
+Error in blavaan(HS.model, data = dat93_lavmodel, ordered = c("DRINKCAT", : blavaan ERROR: models with ordered variables are not yet available.
 
 

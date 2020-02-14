@@ -150,3 +150,10 @@ SEM.model <- ' #Measurement Model
 fit <- sem(SEM.model, data=data_w_res)
 summary(fit)
 ```
+
+Visualizations:
+```{r}
+library(semPlot)
+semPaths(fit)
+```
+

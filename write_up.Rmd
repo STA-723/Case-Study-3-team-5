@@ -42,13 +42,13 @@ SEM paper: [@ullman2003structural]
 
 
 
-Model structure hyperlink: Fig \ref{fig:Model}
+Model structure link: Fig \ref{fig:Model}
 
-Simplified model hyperlink: Fig \ref{fig:simpleModel}
+Simplified model link: Fig \ref{fig:simpleModel}
 
-Model 1 semplot hpyerlink: Fig \ref{fig:Model1_sem}
+Model 1 semplot link: Fig \ref{fig:Model1_sem}
 
-Model 2 semplot hpyerlink: Fig \ref{fig:Model2_sem}
+Model 2 semplot link: Fig \ref{fig:Model2_sem}
 
 
 #### 3. Results
@@ -64,9 +64,9 @@ Instead of analyzing all questions in the survey, which is unnecessary and redun
 
 ##### 3.2 Main Results
 
-Model 1 result hpyerlink: Fig \ref{fig:Model1_latent}, \ref{fig:Model1_reg}
+Model 1 result link: Fig \ref{fig:Model1_latent}, \ref{fig:Model1_reg}
 
-Model 2 result hpyerlink: Fig \ref{fig:Model2_latent}, \ref{fig:Model2_reg}
+Model 2 result link: Fig \ref{fig:Model2_latent}, \ref{fig:Model2_reg}
 
 
 

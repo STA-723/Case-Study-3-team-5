@@ -131,11 +131,13 @@ engagement ~ Gender + Age_Group + DRINKCAT + Alc_Problem +
 It's thus simplified as follows: note the Drink_Occ and Drink_Num are removed for convergence as well. We are using DRINKCAT to measure the alcohol level for each respondent:
 ```{r}
 # Combine final and residuals, drop original responses (B15A-B15J):
+# colmean <- apply(residual2, 2, mean)
+# residual2 <- sweep(residual2, 2, colmean, "-")
 data_w_res <- cbind(final_data, residual2)
 data_w_res <- data_w_res[,11:ncol(data_w_res)]
 
 SEM.model <- ' #Measurement Model 
-                engagement  =~ B15A_Res2 + B15B_Res2 + B15C_Res2 + B15D_Res2 +
+                engagement  =~ start(0.5)*B15A_Res2 + B15B_Res2 + B15C_Res2 + B15D_Res2 +
                                B15E_Res2 + B15F_Res2 + B15G_Res2 + B15H_Res2 +
                                B15I_Res2 + B15J_Res2 + Ind_Comment
                #Regressions
@@ -144,7 +146,7 @@ SEM.model <- ' #Measurement Model
                              Advice + Complaint + Perception
                              '
 
-fit <- sem(SEM.model, data=data_w_res)
+fit <- sem(SEM.model, data=data_w_res, std.lv=TRUE)
 summary(fit)
 ```
 

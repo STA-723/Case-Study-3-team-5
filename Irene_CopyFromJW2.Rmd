@@ -98,6 +98,26 @@ names(residual2) <- c("B15A_Res2","B15B_Res2","B15C_Res2",
                       "B15G_Res2","B15H_Res2","B15I_Res2","B15J_Res2")
 ```
 
+
+Method 2 (just to confirm the "ov" type gives fitted value on survey responses):
+```{r}
+latent_pred <- lavPredict(fit)
+# summary(fit)
+coef(fit)[1:8] # extract factor loadings
+
+# Check the first sample
+# A, D, G, H, I, J for personal
+c(1,coef(fit)[1:5])*latent_pred[1,1] - ov_pred[1,1:6]
+
+# B, C, E, F for communal
+c(1,coef(fit)[6:8])*latent_pred[1,2] - ov_pred[1,7:10]
+
+# Check all
+sum(abs(latent_pred[,1] %*% matrix(c(1,coef(fit)[1:5]),nrow=1) - ov_pred[,1:6]))
+sum(abs(latent_pred[,2] %*% matrix(c(1,coef(fit)[6:8]),nrow=1) - ov_pred[,7:10]))
+```
+
+
 Now, fit the second part of SEM:
 Ideally, this is the regression model, but it has 2 problems: 
 1. not converge. 

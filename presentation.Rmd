@@ -139,11 +139,19 @@ knitr::include_graphics("2R.png")
 
 ## Conclusions:
 
-- Students with drinking behaviors tend to be more engaged in the survey 
+- Males are less engaged 
 
-- Male are engaged in this alcohol study
+- Students with drinking behaviors are less engaged
 
-- etc..
+- Disagree with campus alcohol policy, more engaged
+
+- Want to change the policy, more engaged
+
+- Students who think legal drinking age should be less than 21 are less engaged.
+
+- Complained before, more engaged
+
+- More friends are drinkers, less engaged.
 
 ## Discussion
 

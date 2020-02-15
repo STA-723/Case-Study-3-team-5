@@ -86,6 +86,9 @@ To find nonlinear effects of latent factors, we may consider using autoencoder [
 Another direction is to consider low-rank factorization of contingency tables. Sparse PARAFAC [@@zhou2015bayesian] uses low rank tensor factorization together with parallel factor analysis, which is helpful when the sample size is massively less than the number of cells. This model can be further used for latent class clustering.
 
 
+\newpage 
+
+### Appendix
 
 
 ```{r, echo=FALSE, fig.cap="\\label{fig:B15} Question B15", out.width = '100%', fig.align='center'}

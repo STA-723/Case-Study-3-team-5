@@ -54,11 +54,18 @@ final_data <- cbind(data_B15, DRINKCAT, data[,456:ncol(data)])
 Treatment for NA's -> non-parametric Bayesian imputation
 ```{r}
 library(NPBayesImputeCat)
-final_data <- lapply()
-model <- CreateModel(final_data, MCZ = NULL, 10,20000,0.25,0.25,17)
+final_data[,names(final_data)!="Perception"] <- lapply(final_data[,names(final_data)!="Perception"], as.factor)
+model <- CreateModel(final_data[,names(final_data)!="Perception"], MCZ = NULL, 10,20000,0.25,0.25,17)
 model$Run(20,40,2)
 result <- model$snapshot
-dat_imputed = GetDataFrame(result$ImputedX, dat[, 5:ncol(dat)])
+final_data_imp <- GetDataFrame(result$ImputedX,
+                              final_data[,names(final_data)!="Perception"])
+Perception <- final_data$Perception
+final_data <- data.frame(final_data_imp, Perception)
+final_data <- na.omit(final_data)
+'%!in%' <- function(x,y)!('%in%'(x,y))
+col_B15 <- c("B15A", "B15B","B15C","B15D","B15E","B15F", "B15G", "B15H", "B15I", "B15J")
+final_data[,names(final_data) %!in% col_B15] <- lapply(final_data[,names(final_data) %!in% col_B15], as.numeric)
 ```
 
 Build first part of SEM to get residuals:

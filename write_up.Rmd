@@ -1,0 +1,155 @@
+---
+title: "Survey Engagement Analysis on Harvard CAS Dataset"
+author: "Justin Weltz, Irene Ji, Keru Wu"
+fontsize: "11pt"
+output:
+  pdf_document: 
+        latex_engine: xelatex
+  html_document:
+    keep_md: yes
+    fig_caption: TRUE
+urlcolor: blue
+linkcolor: blue
+bibliography: bibliography.bib
+link-citations: true
+geometry: margin=1.2in 
+header-includes: 
+  \usepackage{float} 
+  \floatplacement{figure}{H}
+---
+\fontsize{10}{11}
+\selectfont
+
+##### Abstract
+
+Harvard SPH College Alcohol Study (CAS) collected a multi-round survey that interviewed students about their alcohol use and other high risk behaviors. The survey contains multiple Likert scale questions, and we identified that a large number of students tend to give the same answer for these similar questions, indicating that they're less engaged in the survey. To address this latent survey engagement factor, we use structual equation model (SEM) to estimate response quality and survey engagement, finding out relationships between drinking behaviors and survey engagement.
+
+
+#### 1. Introduction
+
+Harvard CAS contains four sets of survey responses from undergraduates in four years: 1993, 1997, 1999 and 2001. The survey mainly focus on students high risk behaviors (e.g. alcohol, tobacco and illicit drugs), including other information such as students' views on campus alcohol policies,  personal background variables, etc.
+
+These four surveys each consists of over 400 questions, which could take up to an hour for a student to complete. The survey also has many similar nested questions (e.g. Fig \ref{fig:B15}). It's probable that some students are less engaged in completing the survey, finally returning the survey with non-informative responses. In psychology, these nested similar questions are called Likert scale questions. Here's a standard five point Likert scale: (1) Strongly Disagree (2) Disagree (3) Undecided (4) Agree (5) Strongly Agree. With so many Likert scale questions in a single survey, we find out that a non-negligible proportion of students tend to give the same answer for these questions. 
+
+From this perspective, we are interested in exploring the latent survey engagement factor behind students. Specifically, we are interested in (1) quantifying and estimating latent survey engagement (2) exploring relationship between drinking behaviors and survey engagement. To make our analysis more detailed, our report focuses on the 1999 survey, but it's straightforward to use our approahces to analyze other surveys.
+
+#### 2. Materials and Methods
+
+Survey Engagement paper: [@hess2013linking]
+
+SEM paper: [@ullman2003structural]
+
+
+
+
+Model structure hyperlink: Fig \ref{fig:Model}
+
+Simplified model hyperlink: Fig \ref{fig:simpleModel}
+
+Model 1 semplot hpyerlink: Fig \ref{fig:Model1_sem}
+
+Model 2 semplot hpyerlink: Fig \ref{fig:Model2_sem}
+
+
+#### 3. Results
+
+##### 3.1 Exploratory Data Analysis & Data Preprocessing
+
+Initial data exploration suggests that some students give the same answer for nested Likert scale questions (Fig \ref{fig:EDA1}). We can see a large number of students response with the first Likert scale (so their sum over 10 questions are 0), implying that engagement among students varies. 
+
+The survey contains a large number of missing data, and we consider different ways to deal with it: (1) use complete cases, (2) manually impute with reasonable values for questions need not to answer, (3) use MICE [@buuren2010mice] to impute, (4) use DPMPM (Fig \ref{fig:DPMPM}, @dunson2009nonparametric, @si2013nonparametric). We will later explain our sensitivity analysis through different missing data manipulations. 
+
+Instead of analyzing all questions in the survey, which is unnecessary and redundant, we select some important questions of interest (Fig \ref{fig:VI}). Specifically speaking, for personal characteristics, we include sex, age group, comments, drink_category (from codebook), drink_occ (question C8, C9), drink_num (question C8, C10), advice (question D4), complaint (question D5), perception (D3A, D3B), etc. To further address our concern on students' view on alchohol policies, we include questions related to their attitudes (question B1, B2, B3, B4, B5). For choice indicator $Y$, we will focus on question B15 (Fig \ref{fig:B15}). We preprocess these variables using different criteria and formulas, which is explicitly explained in our codebook for variables of interest (Fig \ref{fig:VI}). Among quesitons of interest, around 20% cases have missing data.
+
+
+##### 3.2 Main Results
+
+Model 1 result hpyerlink: Fig \ref{fig:Model1_latent}, \ref{fig:Model1_reg}
+
+Model 2 result hpyerlink: Fig \ref{fig:Model2_latent}, \ref{fig:Model2_reg}
+
+
+
+##### 3.3 Sensitivity Analysis
+
+About 20% cases have missing data with respect to our variables of interest (Fig \ref{fig:VI}). We consider four ways to manipulate these missing data: (1) use complete cases, (2) manually impute with reasonable values for questions no need to answer, (3) use MICE [@buuren2010mice] to impute, (4) use nonparamatric Bayesian imputation DPMPM (Fig \ref{fig:DPMPM}, @dunson2009nonparametric, @si2013nonparametric). We would expect DPMPM to have the best performance since it's designed for large-scale categorical surveys.
+
+Our models using four different ways above didn't show distinguishable difference. This is probably because proportion of missing data is relatively low among questions we focus on. Therefore we choose to use the original dataset in future work, and explore missing data manipulation further.
+
+
+#### 4. Discussion
+
+Our Structural Equation Model successfully discovers latent survey engagement factors in Havard CAS dataset. We also discover relationships between drinking behaviors and survey engagement. However, we carry out a simplified version of original model due to constraint of lavaan package [@rosseel2012lavaan]. A direct future work is to implement the model jointly. To further account for uncertainty, we may implement it using Rstan or JAGS.
+
+To find nonlinear effects of latent factors, we may consider using autoencoder [@kramer1991nonlinear]. Autoencoder can be viewed as a nonlinear factor analysis that primarily uses neural networks to first encode the input and later decode it. However, autoencoder may suffer from interpretability due to its complexity.
+
+Another direction is to consider low-rank factorization of contingency tables. Sparse PARAFAC [@@zhou2015bayesian] uses low rank tensor factorization together with parallel factor analysis, which is helpful when the sample size is massively less than the number of cells. This model can be further used for latent class clustering.
+
+
+
+
+```{r, echo=FALSE, fig.cap="\\label{fig:B15} Question B15", out.width = '100%', fig.align='center'}
+knitr::include_graphics("B15.png")
+```
+
+
+
+
+
+```{r, echo=FALSE, fig.cap="\\label{fig:Model} Model Structure", out.width = '100%', fig.align='center'}
+knitr::include_graphics("Graph.png")
+```
+
+```{r, echo=FALSE, fig.cap="\\label{fig:simpleModel} Simplified Model", out.width = '100%', fig.align='center'}
+knitr::include_graphics("Graph2.png")
+```
+
+```{r, echo=FALSE, fig.cap="\\label{fig:Model1_sem} Model 1 SEM plot", out.width = '80%', fig.align='center'}
+knitr::include_graphics("semplot1.png")
+```
+
+```{r, echo=FALSE, fig.cap="\\label{fig:Model2_sem} Model 2 SEM plot", out.width = '80%', fig.align='center'}
+knitr::include_graphics("semplot2.png")
+```
+
+
+```{r, echo=FALSE, fig.cap="\\label{fig:EDA1} Histogram of sum of individual answers for question B15 ", out.width = '70%', fig.align='center'}
+knitr::include_graphics("EDA1.png")
+```
+
+```{r, echo=FALSE, fig.cap="\\label{fig:DPMPM} Infinite Mixture of Product of Multinomials", out.width = '60%', fig.align='center'}
+knitr::include_graphics("DPMPM.png")
+```
+
+```{r, echo=FALSE, fig.cap="\\label{fig:VI} Variables of Interest", out.width = '100%', fig.align='center'}
+knitr::include_graphics("VI.png")
+```
+
+
+
+
+
+
+
+
+
+```{r, echo=FALSE, fig.cap="\\label{fig:Model1_latent} Model 1 Latent Factors", out.width = '80%', fig.align='center'}
+knitr::include_graphics("1L.png")
+```
+
+```{r, echo=FALSE, fig.cap="\\label{fig:Model1_reg} Model 1 Regression results", out.width = '80%', fig.align='center'}
+knitr::include_graphics("1R.png")
+```
+
+```{r, echo=FALSE, fig.cap="\\label{fig:Model2_latent} Model 2 Latent Factors", out.width = '80%', fig.align='center'}
+knitr::include_graphics("2L.png")
+```
+
+```{r, echo=FALSE, fig.cap="\\label{fig:Model2_reg} Model 2 Regression results", out.width = '80%', fig.align='center'}
+knitr::include_graphics("2R.png")
+```
+
+
+
+
+#### References

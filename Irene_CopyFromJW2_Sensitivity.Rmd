@@ -1,0 +1,161 @@
+---
+title: "JW-Workspace2"
+author: "Justin Weltz"
+date: "2/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(dplyr)
+require(corrgram)
+```
+
+```{r}
+load("dat.Rdata")
+#Questions
+data_B15 <- dat99 %>% select(starts_with("B15"))
+```
+
+Data Preprocessing
+```{r Variable without imputations}
+data <- dat99 %>% mutate(Ind_Comment = as.numeric(COMMENTS == 1)) #original 1:yes; 2:no
+data <- data %>% mutate(Gender = SEX) #0:F; 1:M
+data <- data %>% mutate(Age_Group = as.numeric(AGEGROUP == 1)) #1:<21; 0: >=21
+data <- data %>% mutate(Alc_Problem = as.numeric(B1 != 4)) #1: is problem; 0: not a problem
+data <- data %>% mutate(AP_all = as.numeric(B2 == 1)) %>%
+                 mutate(AP_stu = as.numeric(B2 == 2)) %>%
+                 mutate(AP_all21 = as.numeric(B2 == 3)) %>%
+                 mutate(AP_stu21 = as.numeric(B2 == 4)) %>%
+                 mutate(AP_no = as.numeric(B2 == 5)) %>%
+                 mutate(AP_notknow = as.numeric(B2 == 6))
+data <- data %>% mutate(Enforce_Pol = as.numeric(B3 == 1 | B3 == 2 | B3 == 3)) #1: enforeced
+data <- data %>% mutate(Agree_Pol = as.numeric(B4 == 1 | B4 == 2)) #1: agree
+data <- data %>% mutate(Change_Pol = as.numeric(B5 == 2 | B5 == 3)) #1: change
+data <- data %>% mutate(Min_Drink_Age = as.numeric(B13 != 5 )) #1: <21
+data <- data %>% mutate(Advice = D4) %>% mutate(Complaint = D5) %>% mutate(Perception = D3B/D3A)
+```
+
+```{r Variable with imputations (survey set up)}
+# Drink Occasions
+data <- data %>% mutate(Drink_Occ = ifelse(is.na(C9), ifelse(C8 == 1 | C8 == 2 | C8 == 3,
+                                                      1, C9), C9))
+# Drink numbers
+data <- data %>% mutate(Drink_Num = ifelse(is.na(C10), ifelse(C8 == 1 | C8 == 2 | 
+                                                                C8 == 3,0, C10), C10))
+```
+
+Final Data
+```{r}
+DRINKCAT <- data$DRINKCAT
+final_data <- cbind(data_B15, DRINKCAT, data[,456:ncol(data)])
+```
+
+Treatment for NA's -> non-parametric Bayesian imputation
+```{r}
+library(NPBayesImputeCat)
+final_data <- lapply()
+model <- CreateModel(final_data, MCZ = NULL, 10,20000,0.25,0.25,17)
+model$Run(20,40,2)
+result <- model$snapshot
+dat_imputed = GetDataFrame(result$ImputedX, dat[, 5:ncol(dat)])
+```
+
+Build first part of SEM to get residuals:
+```{r}
+require(lavaan)
+HS.model <- ' #Measurement Model 
+              personal  =~ B15A + B15D + B15G + B15H + B15I + B15J 
+              communal =~ B15B + B15C + B15E + B15F
+              #Regressions
+              personal ~ Drink_Num + Drink_Occ + Advice + Complaint + Perception + Enforce_Pol
+              communal ~ Drink_Num + Drink_Occ + Advice + Complaint + Perception + Enforce_Pol'
+
+fit <- sem(HS.model, data=final_data, ordered = c("B15A", "B15B","B15C","B15D","B15E","B15F", "B15G", "B15H", "B15I", "B15J"))
+summary(fit)
+```
+
+Obtain the residuals of B15's from SEM (store it as "residual2"):
+```{r}
+# Fitted values of survey responses
+ov_pred <- lavPredict(fit, type = "ov")
+ov_pred <- data.frame(ov_pred)
+
+# Observed values
+obs_data <- final_data
+
+# Reorder the columns to compute residuals
+ov_pred_B15 <- cbind(ov_pred$B15A, ov_pred$B15B, ov_pred$B15C,
+                     ov_pred$B15D, ov_pred$B15E, ov_pred$B15F,
+                     ov_pred$B15G, ov_pred$B15H, ov_pred$B15I,
+                     ov_pred$B15J)
+obs_B15 <- cbind(obs_data$B15A, obs_data$B15B, obs_data$B15C,
+                 obs_data$B15D, obs_data$B15E, obs_data$B15F,
+                 obs_data$B15G, obs_data$B15H, obs_data$B15I,
+                 obs_data$B15J)
+
+# Compute residuals and rename the columns
+residual2 <- data.frame(abs(obs_B15 - ov_pred_B15))
+names(residual2) <- c("B15A_Res2","B15B_Res2","B15C_Res2",
+                      "B15D_Res2","B15E_Res2","B15F_Res2",
+                      "B15G_Res2","B15H_Res2","B15I_Res2","B15J_Res2")
+```
+
+
+Method 2 (just to confirm the "ov" type gives fitted value on survey responses):
+```{r}
+latent_pred <- lavPredict(fit)
+# summary(fit)
+coef(fit)[1:8] # extract factor loadings
+
+# Check the first sample
+# A, D, G, H, I, J for personal
+c(1,coef(fit)[1:5])*latent_pred[1,1] - ov_pred[1,1:6]
+
+# B, C, E, F for communal
+c(1,coef(fit)[6:8])*latent_pred[1,2] - ov_pred[1,7:10]
+
+# Check all
+sum(abs(latent_pred[,1] %*% matrix(c(1,coef(fit)[1:5]),nrow=1) - ov_pred[,1:6]))
+sum(abs(latent_pred[,2] %*% matrix(c(1,coef(fit)[6:8]),nrow=1) - ov_pred[,7:10]))
+```
+
+
+Now, fit the second part of SEM:
+Ideally, this is the regression model, but it has 2 problems: 
+1. not converge. 
+2. sigma matrix is not positive definite (probably due to 6 variables for B2)
+
+engagement ~ Gender + Age_Group + DRINKCAT + Alc_Problem +
+             AP_all + AP_stu + AP_all21 + AP_stu21 + AP_no + AP_notknow +
+             Enforce_Pol + Agree_Pol + Change_Pol + Min_Drink_Age +
+             Drink_Occ + Drink_Num + Advice + Complaint + Perception
+             
+It's thus simplified as follows: note the Drink_Occ and Drink_Num are removed for convergence as well. We are using DRINKCAT to measure the alcohol level for each respondent:
+```{r}
+# Combine final and residuals, drop original responses (B15A-B15J):
+# colmean <- apply(residual2, 2, mean)
+# residual2 <- sweep(residual2, 2, colmean, "-")
+data_w_res <- cbind(final_data, residual2)
+data_w_res <- data_w_res[,11:ncol(data_w_res)]
+
+SEM.model <- ' #Measurement Model 
+                engagement  =~ start(0.5)*B15A_Res2 + B15B_Res2 + B15C_Res2 + B15D_Res2 +
+                               B15E_Res2 + B15F_Res2 + B15G_Res2 + B15H_Res2 +
+                               B15I_Res2 + B15J_Res2 + Ind_Comment
+               #Regressions
+                engagement ~ Gender + DRINKCAT + Alc_Problem + 
+                             Enforce_Pol + Change_Pol + Min_Drink_Age +
+                             Advice + Complaint + Perception
+                             '
+
+fit <- sem(SEM.model, data=data_w_res, std.lv=TRUE)
+summary(fit)
+```
+
+Visualizations:
+```{r}
+library(semPlot)
+semPaths(fit)
+```
+

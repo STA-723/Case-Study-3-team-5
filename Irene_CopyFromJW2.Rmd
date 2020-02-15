@@ -142,7 +142,7 @@ SEM.model <- ' #Measurement Model
                                B15I_Res2 + B15J_Res2 + Ind_Comment
                #Regressions
                 engagement ~ Gender + DRINKCAT + Alc_Problem + 
-                             Enforce_Pol + Agree_Pol + Change_Pol + Min_Drink_Age +
+                             Enforce_Pol + Change_Pol + Min_Drink_Age +
                              Advice + Complaint + Perception
                              '
 

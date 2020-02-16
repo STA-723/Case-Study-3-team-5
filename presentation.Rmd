@@ -154,19 +154,17 @@ knitr::include_graphics("2R.png")
 
 ## Conclusions:
 
-- Males are less engaged 
+- Females - more engaged
 
-- Students with drinking behaviors are less engaged
+- Drink more or have more friends as binge drinkers - less engaged
 
-- Disagree with campus alcohol policy, more engaged
+- Want to change compus alcohol policy - more engaged
 
-- Want to change the policy, more engaged
+- Complained about improper behaviours before - more engaged
 
-- Students who think legal drinking age should be less than 21 are less engaged.
+- Think legal drinking age should be less than 21 - less engaged
 
-- Complained before, more engaged
 
-- More friends are drinkers, less engaged.
 
 ## Discussion
 

@@ -31,7 +31,7 @@ Harvard CAS contains four sets of survey responses from undergraduates in four y
 
 These four surveys each consists of over 400 questions, which could take up to an hour for a student to complete. The survey also has many similar nested questions (e.g. Fig \ref{fig:B15}). It's probable that some students are less engaged in completing the survey, finally returning the survey with non-informative responses. In psychology, these nested similar questions are called Likert scale questions. Here's a standard five point Likert scale: (1) Strongly Disagree (2) Disagree (3) Undecided (4) Agree (5) Strongly Agree. With so many Likert scale questions in a single survey, we find out that a non-negligible proportion of students tend to give the same answer for these questions. 
 
-From this perspective, we are interested in exploring the latent survey engagement factor behind students. Specifically, we are interested in (1) quantifying and estimating latent survey engagement (2) exploring relationship between drinking behaviors and survey engagement. To make our analysis more detailed, our report focuses on the section B15 in the 1999 survey, but it's straightforward to use our approaches to analyze other questions and surveys.
+From this perspective, we are interested in exploring the latent survey engagement factor behind students. Specifically, we are interested in (1) quantifying and estimating latent survey engagement (2) exploring relationships between drinking behaviors and survey engagement. To make our analysis more detailed, our report focuses on section B15, which explores student attitudes towards a variety of alcohol-related policies on campus, in the 1999 survey. However, it is straightforward to use our approaches to analyze other questions and surveys.
 
 #### 2. Materials and Methods
 
@@ -65,7 +65,7 @@ Our models using four different ways above didn't show distinguishable differenc
 
 #### 4. Discussion
 
-Our Structural Equation Model successfully discovers latent survey engagement factors in Havard CAS dataset. We also discover relationships between drinking behaviors and survey engagement. However, we carry out a simplified version of original model due to constraint of lavaan package [@rosseel2012lavaan]. A direct future work is to implement the model jointly. To further account for uncertainty, we may implement it using Rstan or JAGS.
+Our Structural Equation Model successfully explores latent survey engagement factors in Havard CAS dataset. We also discover relationships between drinking behaviors and survey engagement. However, we carry out a simplified version of original model due to constraint of lavaan package [@rosseel2012lavaan]. A direct future work is to implement the model jointly. To further account for uncertainty, we may implement it using Rstan or JAGS.
 
 To find nonlinear effects of latent factors, we may consider using autoencoder [@kramer1991nonlinear]. Autoencoder can be viewed as a nonlinear factor analysis that primarily uses neural networks to first encode the input and later decode it. However, autoencoder may suffer from interpretability due to its complexity.
 

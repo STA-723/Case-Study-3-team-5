@@ -12,7 +12,7 @@ urlcolor: blue
 linkcolor: blue
 bibliography: bibliography.bib
 link-citations: true
-geometry: margin=1.2in 
+geometry: margin=1.1in 
 header-includes: 
   \usepackage{float} 
   \floatplacement{figure}{H}
@@ -35,7 +35,13 @@ From this perspective, we are interested in exploring the latent survey engageme
 
 #### 2. Materials and Methods
 
-The philosophy behind our method is derived from "Linking response quality to survey engagement: A combined random scale and latent variable approach" [@hess2013linking]. This paper suggests modeling survey engagement as a latent multiplicative effect nestled in a larger structural equation model (SEM) [@ullman2003structural], essentially posotulating that engagement can be thought of as individualized heteroskedasticity. If an individual is not actively interested in the survey, then the data is likely to only contain a muted signal of their true preferences and vice-versa. Consequently, the model can be thought of in two parts. One SEM describing the structure of the mean response to the survey questions and another capturing the latent engagement variable that scales this mean response for an individual. However, implementing the exact model described in the Hess and Stathopoulus paper involves interacting latent variables, which can often be messy and non-intuitive in a frequentist context. Consequently, we divide the model into its two natural subparts (Fig. \ref{fig:simpleModel}). Since section B15 seems to naturally divide into questions about policies cracking down on personal alcohol use and questions about general changes to alcohol-related campus culture, we use two latent variables to capture this structure. These latent variables are then regressed on a series of personal characterstics (Fig \ref{fig:Model1_sem}). After modeling the mean survey using this SEM, we take the absolute value of the residuals (squaring them exacerbated the right skew of the residuals) from the predictions of individualized survey responses as an indication of the engagement related heteroskedacity not captured by the mean response model. We then load these residuals on an engagement variable that is in turn regressed on a series of personal characteristics (Fig \ref{fig:Model2_sem}) in a seperate SEM. We believe that this process accurately captures the latent engagement multiplicative effect in a two step modeling process.
+The philosophy behind our method is derived from "Linking response quality to survey engagement: A combined random scale and latent variable approach" [@hess2013linking, Fig \ref{fig:Model}]. This paper suggests modeling survey engagement as a latent multiplicative effect nestled in a larger structural equation model (SEM) [@ullman2003structural], essentially posotulating that engagement can be thought of as individualized heteroskedasticity. If an individual is not actively interested in the survey, then the data is likely to only contain a muted signal of their true preferences and vice-versa. Consequently, the model can be thought of in two parts. One SEM describing the structure of the mean response to the survey questions and another capturing the latent engagement variable that scales this mean response for an individual. However, implementing the exact model described in the Hess and Stathopoulus paper involves interacting latent variables, which can often be messy and non-intuitive in a frequentist context. Consequently, we divide the model into its two natural subparts (Fig. \ref{fig:simpleModel}). 
+
+```{r, echo=FALSE, fig.cap="\\label{fig:Model} Model Structure", out.width = '60%', fig.align='center'}
+knitr::include_graphics("Graph.png")
+```
+
+Since section B15 seems to naturally divide into questions about policies cracking down on personal alcohol use and questions about general changes to alcohol-related campus culture, we use two latent variables to capture this structure. These latent variables are then regressed on a series of personal characterstics (Fig \ref{fig:Model1_sem}). After modeling the mean survey using this SEM, we take the absolute value of the residuals (squaring them exacerbated the right skew of the residuals) from the predictions of individualized survey responses as an indication of the engagement related heteroskedacity not captured by the mean response model. We then load these residuals on an engagement variable that is in turn regressed on a series of personal characteristics (Fig \ref{fig:Model2_sem}) in a seperate SEM. We believe that this process accurately captures the latent engagement multiplicative effect in a two step modeling process.
 
 #### 3. Results
 
@@ -85,9 +91,6 @@ knitr::include_graphics("B15.png")
 
 
 
-```{r, echo=FALSE, fig.cap="\\label{fig:Model} Model Structure", out.width = '100%', fig.align='center'}
-knitr::include_graphics("Graph.png")
-```
 
 ```{r, echo=FALSE, fig.cap="\\label{fig:simpleModel} Simplified Model", out.width = '100%', fig.align='center'}
 knitr::include_graphics("Graph2.png")

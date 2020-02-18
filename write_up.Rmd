@@ -64,16 +64,16 @@ The above results suggest that personal drinking habits, attitudes towards alcoh
 
 ##### 3.3 Sensitivity Analysis
 
-About 20% cases have missing data with respect to our variables of interest (Fig \ref{fig:VI}). We consider four ways to manipulate these missing data: (1) use complete cases, (2) manually impute with reasonable values for questions no need to answer, (3) use MICE [@buuren2010mice] to impute, (4) use nonparamatric Bayesian imputation DPMPM (Fig \ref{fig:DPMPM}, @dunson2009nonparametric, @si2013nonparametric). We would expect DPMPM to have the best performance since it's designed for large-scale categorical surveys.
+About 20% cases have missing data with respect to our variables of interest (Fig \ref{fig:VI}). We consider four ways to manipulate missing data: (1) use complete cases, (2) manually impute with reasonable values for questions no need to answer, (3) use MICE [@buuren2010mice] to impute, (4) use nonparamatric Bayesian imputation DPMPM (Fig \ref{fig:DPMPM}, @dunson2009nonparametric, @si2013nonparametric). We expect DPMPM to have the best performance since it's designed for large-scale categorical surveys.
 
-Our models using four different ways above didn't show distinguishable difference. This is probably because proportion of missing data is relatively low among questions we focus on. Therefore we choose to use the original dataset in future work, and explore missing data manipulation further.
+Our models using four different ways above didn't show distinguishable difference. This is probably because proportion of missing data is relatively low among questions we focus on. Therefore we choose to use complete cases for analysis.
 
 
 #### 4. Discussion
 
-Our Structural Equation Model successfully explores latent survey engagement factors in Havard CAS dataset. We also discover relationships between drinking behaviors and survey engagement. However, we carry out a simplified version of original model due to constraint of lavaan package [@rosseel2012lavaan]. A direct future work is to implement the model jointly. To further account for uncertainty, we may implement it using Rstan or JAGS.
+Our Structural Equation Model successfully explores latent survey engagement factors in Havard CAS dataset. We also discover relationships between drinking behaviors and survey engagement. However, we carry out a simplified version of original model due to constraint of lavaan package [@rosseel2012lavaan]. One direction is to try different transformations for residuals, such as log. Another future work is to implement the model jointly. To further account for uncertainty, we may implement it using Rstan or JAGS.
 
-To find nonlinear effects of latent factors, we may consider using autoencoder [@kramer1991nonlinear]. Autoencoder can be viewed as a nonlinear factor analysis that primarily uses neural networks to first encode the input and later decode it. However, autoencoder may suffer from interpretability due to its complexity.
+To find nonlinear effects of latent factors, we may consider using autoencoder [@kramer1991nonlinear]. Autoencoder can be viewed as a nonlinear factor analysis which uses neural networks to first encode the input and later decode it. However, autoencoder may suffer from interpretability due to its complexity.
 
 Another direction is to consider low-rank factorization of contingency tables. Sparse PARAFAC [@@zhou2015bayesian] uses low rank tensor factorization together with parallel factor analysis, which is helpful when the sample size is massively less than the number of cells. This model can be further used for latent class clustering.
 

@@ -156,11 +156,11 @@ knitr::include_graphics("2R.png")
 
 - Females - more engaged
 
-- Drink more or have more friends as binge drinkers - less engaged
+- Drinkers or have more drinker friends - less engaged
 
-- Want to change compus alcohol policy - more engaged
+- Want to change campus alcohol policy - more engaged
 
-- Complained about improper behaviours before - more engaged
+- Complained about other's behaviors before - more engaged
 
 - Think legal drinking age should be less than 21 - less engaged
 

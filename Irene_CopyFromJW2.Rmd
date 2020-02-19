@@ -150,6 +150,11 @@ fit <- sem(SEM.model, data=data_w_res, std.lv=TRUE)
 summary(fit)
 ```
 
+Goodness of Fit
+```{r}
+fitMeasures(fit, c("cfi","rmsea","srmr"))
+```
+
 Visualizations:
 ```{r}
 library(semPlot)
